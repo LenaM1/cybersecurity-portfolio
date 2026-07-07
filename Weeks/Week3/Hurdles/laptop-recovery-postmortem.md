@@ -7,7 +7,7 @@
 - **Date of incident:** [2026-07-01]
 - **Machine:** HP laptop, 16 GB RAM, Windows (UEFI boot), single NVMe/SSD
 - **Context:** Building a lab VM in VMware Workstation for the Week 3 SIEM task
-- **Outcome:** Recovered via professional repair (paid OS reinstall). No hardware damage.
+- **Outcome:** Recovered via OS reinstall. No hardware damage.
 
 ---
 
@@ -43,7 +43,7 @@ memory into constant swapping. The fix is disciplined sizing, not more hardware.
 
 ## 3. Symptoms observed (in order)
 
-1. `Your computer ran into a problem` → `Diagnosing your PC` (Windows Automatic Repair).
+1. `The computer ran into a problem` → `Diagnosing your PC` (Windows Automatic Repair).
 2. Brief `no operating system` / `no bootable device` message.
 3. HP logo → spinner → loop back to repair (boot loop).
 4. Final state: **Recovery — "Your PC couldn't start properly", error code `0xc0000001`.**
