@@ -5,7 +5,7 @@
 > Doubles as a reusable boot-recovery runbook.
 
 - **Date of incident:** [2026-07-01]
-- **Machine:** HP laptop, 8 GB RAM, Windows (UEFI boot), single NVMe/SSD
+- **Machine:** HP laptop, 16 GB RAM, Windows (UEFI boot), single NVMe/SSD
 - **Context:** Building a lab VM in VMware Workstation for the Week 3 SIEM task
 - **Outcome:** Recovered via professional repair (paid OS reinstall). No hardware damage.
 
@@ -13,12 +13,11 @@
 
 ## 1. Summary
 
-While creating an Ubuntu **Desktop** VM in VMware on an 8 GB host, the machine ran
-out of memory during the guest install and crashed hard. The unclean shutdown
+While creating an Ubuntu **Desktop** VM in VMware, the host (16 GB RAM) was driven
+into severe memory pressure during the guest install and crashed hard. The unclean shutdown
 corrupted the Windows **boot configuration** (not the data), leaving the laptop
 unable to start — cycling through Automatic Repair and ending on recovery error
-**0xc0000001**. Built-in recovery tools did not resolve it; the machine was taken
-to a repair shop and restored with a **new OS installation**.
+**0xc0000001**. Built-in recovery tools did not resolve it; the machine wasrestored with a **new OS installation**.
 
 Crucially, throughout the failure the **drive and files were confirmed intact** —
 this was a boot problem, never a data-loss problem.
@@ -29,14 +28,16 @@ this was a boot problem, never a data-loss problem.
 
 | Factor | Detail |
 |---|---|
-| Trigger | Installing a VM guest (Ubuntu Desktop) with **4 GB** allocated on an **8 GB** host |
-| Mechanism | Host RAM exhausted (host OS + VMware + heavy guest GUI) → freeze → unclean power-off |
+| Host | HP laptop with **16 GB RAM** — enough for the lab *if* VMs are sized sensibly |
+| Trigger | Installing a heavy **Ubuntu Desktop** guest with **8 GB** allocated, on top of other running load | With an existing Kali linux VM
+| Mechanism | Over-allocation + the Desktop GUI + concurrent load drove memory into heavy swapping → freeze → unclean power-off |
 | Damage | The abrupt shutdown corrupted the **UEFI boot files / BCD**; Windows could no longer start |
 | **Not** the cause | The SSD hardware was healthy and user data was untouched — verified in the recovery console |
 
-The core mistake was **over-allocating memory on a low-RAM host** and using the
-heavier **Desktop** image instead of **Server**. On 8 GB there simply wasn't enough
-headroom for the host to stay stable.
+The host had ample RAM (16 GB); the problem was **over-committing it** — allocating too
+much to the VM and using the heavier **Desktop** image instead of **Server**, while other
+things were running. Even a 16 GB machine will stall if it's pushed past its available
+memory into constant swapping. The fix is disciplined sizing, not more hardware.
 
 ---
 
@@ -63,8 +64,8 @@ Documented in the order tried, with outcomes — useful as a runbook next time.
 | 6 | **Rebuild boot records** | `bootrec /scanos`, `bootrec /rebuildbcd` | Reported "0 Windows installations" — a known **UEFI quirk**, not actual absence |
 | 7 | **Recreate boot files** | `bcdboot C:\Windows` | "Boot files successfully created" |
 | 8 | Reboot | — | **0xc0000001 persisted** |
-| 9 | **Escalation** | Windows install USB → Startup Repair, or repair shop | Chose the shop |
-| 10 | **Professional repair** | Local shop | ✅ Restored via **new OS installation** (paid) |
+| 9 | **Escalation** | Windows install USB → Startup Repair
+| 10 | **OS_INSTALLATION** | Local shop | ✅ Restored via **new OS installation** |
 
 ### Why step 8 still failed
 On UEFI systems the boot files live on a separate hidden **EFI System Partition**.
@@ -74,14 +75,8 @@ from **Windows installation media**, or a technician (which is the route taken).
 
 ---
 
-## 5. Resolution & cost
 
-- **Fix applied:** Professional **OS reinstallation** at a repair shop.
-- **Amount paid:** [€___]  *(typical range for a boot fix / reinstall in this area was ~€30–€80)*
-- **Turnaround:** [same-day / __ days]
-- **Data:** [Backed up before reinstall? yes/no — confirm your files were preserved. If a clean reinstall was done without backup, restore from your own backups.]
-
-**Lesson embedded here:** always ask the shop to **back up files before any reinstall**.
+**Lesson embedded here:** always  **back up files before any reinstall**.
 Because the drive was healthy, the data was recoverable regardless — but a backup
 makes that guaranteed rather than assumed.
 
@@ -90,13 +85,14 @@ makes that guaranteed rather than assumed.
 ## 6. Prevention — what changes going forward
 
 **Sizing (the actual fix for the root cause)**
-- On an 8 GB host, give a VM **2 GB (3 GB max)**, never 4 GB.
-- Run **one VM at a time**; close other apps while it runs.
-- Use **Ubuntu Server**, not Desktop — no GUI saves ~1 GB RAM.
-
-**Don't run heavy tooling locally on 8 GB**
-- For the Week 3 SIEM, use the **Wazuh Cloud free trial** (server runs in the cloud,
-  laptop runs only a lightweight agent) instead of a local all-in-one install.
+- Keep total RAM given to all VMs at roughly **half the host** — on 16 GB that's about
+  **8 GB across all VMs**, leaving 8 GB for Windows.
+- Kali (4 GB) + a Wazuh VM (4 GB) already sits at that limit — don't exceed it, and never
+  give a single VM more than it needs.
+- Run heavy operations (like an OS install) with **only one VM powered on**; power the
+  others off first and close heavy host apps.
+- Use **Ubuntu Server**, not Desktop — no GUI saves ~1 GB RAM and avoids the exact heavy
+  guest that triggered the crash.
 
 **Make the host recoverable *before* big changes**
 - Turn on **System Protection** for C: and create a **restore point** first — this is
@@ -140,9 +136,7 @@ everything" or reinstall-without-backup while stressed.
 ## 8. Silver lining
 
 This is, in effect, a real **incident write-up** — timeline, root-cause analysis,
-remediation steps, and preventive controls. That's the same structure used for
-security incident reports (Week 5's deliverable), so the painful evening produced a
-genuinely useful portfolio artifact and a runbook you'll reuse.
+remediation steps, and preventive controls.
 
 ---
 
