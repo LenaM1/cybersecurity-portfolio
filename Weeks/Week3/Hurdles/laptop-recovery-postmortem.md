@@ -4,7 +4,7 @@
 > how it was ultimately restored, and what to change so it doesn't recur.
 > Doubles as a reusable boot-recovery runbook.
 
-- **Date of incident:** [YYYY-MM-DD]
+- **Date of incident:** [2026-07-01]
 - **Machine:** HP laptop, 8 GB RAM, Windows (UEFI boot), single NVMe/SSD
 - **Context:** Building a lab VM in VMware Workstation for the Week 3 SIEM task
 - **Outcome:** Recovered via professional repair (paid OS reinstall). No hardware damage.
