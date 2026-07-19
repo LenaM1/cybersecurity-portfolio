@@ -1,0 +1,32 @@
+# Passive, CT-log based
+subfinder -d africahackon.com-all -o subfinder.txt
+
+# Passive, aggregates 20+ OSINT sources
+amass enum -passive -d africahackon.com -o amass.txt
+
+# Fast passive tool, good for quick cross-check
+assetfinder --subs-only africahackon.com > assetfinder.txt
+
+# Certificate transparency search directly
+curl -s "https://crt.sh/?q=%25.africahackon.com&output=json" | jq -r '.[].name_value' | sort -u > crtsh.txt
+
+# Merge and dedupe everything
+cat subfinder.txt amass.txt assetfinder.txt crtsh.txt | sort -u > all_subdomains.txt
+
+# Bulk DNS resolution — filters out subdomains with no DNS record at all
+dnsx -l all_subdomains.txt -resp -o resolved.txt
+
+# Confirm which resolves are actually live
+httpx -l resolved.txt -status-code -title -tech-detect -o live_hosts.txt
+
+# Purpose-built WAF fingerprinting tool
+wafw00f -i live_hosts.txt -o waf_results.txt
+
+# Cross-check with whatweb (also flags CDN/WAF headers + tech stack)
+whatweb -i live_hosts.txt --log-json=whatweb_results.json
+
+
+
+
+
+
