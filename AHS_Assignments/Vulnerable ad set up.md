@@ -451,10 +451,6 @@ For issues, suggestions, or improvements to this lab:
 
 ---
 
-**Last Updated:** July 28, 2026
-
-**Status:** ✅ Fully Operational
-
 ## Proof of lab-set-up:
 ![Active Directory Setup](./vulnerable%20ad%20images/Active-Directory.png)
 
@@ -475,4 +471,8 @@ For issues, suggestions, or improvements to this lab:
 ![Standard Users Weak Pass](./vulnerable%20ad%20images/Standard_Users_with_weak_pass.png)
 
 ![Verify Admin Users](./vulnerable%20ad%20images/Verify_Admin_Users.png)
+
+**Last Updated:** July 28, 2026
+
+**Status:** ✅ Fully Operational
 ---
